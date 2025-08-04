@@ -1,6 +1,10 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Download, Github, Moon, Sun } from "lucide-react";
+import { Download, Loader2, LogOut, Moon, Sun } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { client } from "@/utils/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import useAuth from "@/hooks/useAuth";
 interface HeaderProps {
   onExport: () => void;
   toggleTheme: () => void;
@@ -11,6 +15,18 @@ const Header: React.FC<HeaderProps> = ({
   toggleTheme,
   isDarkMode,
 }) => {
+  const router = useRouter();
+  const { user, loading } = useAuth();
+  const { toast } = useToast();
+  const handleSignOut = async () => {
+    await client().auth.signOut();
+    toast({
+      title: "Signed out successfully",
+      description: "You have been signed out successfully",
+    });
+    router.push("/");
+  };
+
   return (
     <header className="w-full py-4 px-6 border-b border-slate-200/80 dark:border-slate-800/80 backdrop-blur-sm bg-white/50 dark:bg-black/30 animate-fade-in">
       <div className="container max-w-full flex items-center justify-between">
@@ -47,12 +63,16 @@ const Header: React.FC<HeaderProps> = ({
             <Download size={16} className="mr-2" />
             Export
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="glass-button"
-            asChild
-          ></Button>
+          {user && (
+            <Button size="sm" className="glass-button" onClick={handleSignOut}>
+              {!loading ? (
+                <LogOut size={16} className="mr-2" />
+              ) : (
+                <Loader2 size={16} className="mr-2" />
+              )}
+              Sign Out
+            </Button>
+          )}
         </div>
       </div>
     </header>
