@@ -121,13 +121,11 @@ Return only the diagram type (e.g., "flowchart", "sequence_diagram", etc.) or "n
     !validDiagramTypes.includes(identifiedPrompt) &&
     identifiedPrompt !== "not_diagram"
   ) {
-    throw new Error(`Invalid diagram type identified: ${identifiedPrompt}`);
+    return "not_diagram"
   }
 
   if (identifiedPrompt === "not_diagram") {
-    throw new Error(
-      "The provided prompt is not related to diagram generation."
-    );
+    return "not_diagram";
   }
   console.log("Identified Prompt:", identifiedPrompt);
 

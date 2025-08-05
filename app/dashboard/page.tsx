@@ -3,9 +3,7 @@ import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Editor from "@/components/Editor";
 import Preview from "@/components/Preview";
-import AIPrompt from "@/components/AIPrompt";
 import { toast } from "sonner";
-import { Separator } from "@/components/ui/separator";
 import { saveAs } from "file-saver";
 
 const DEFAULT_DIAGRAM = `graph TD
@@ -17,8 +15,7 @@ const DEFAULT_DIAGRAM = `graph TD
 
 const Dashboard = () => {
   const [code, setCode] = useState<string>(DEFAULT_DIAGRAM);
-  const [prompt, setPrompt] = useState<string>("");
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false)
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
 
   // Initialize theme on component mount
   useEffect(() => {
@@ -103,17 +100,8 @@ const Dashboard = () => {
                 value={code}
                 onChange={setCode}
                 className="flex-1 min-h-0"
-                promptValue={prompt}
-                onPromptChange={setPrompt}
+                onDiagramGenerated={handleDiagramGenerated}
               />
-              <Separator className="my-4" />
-              <div className="flex-shrink-0">
-                <AIPrompt
-                  prompt={prompt}
-                  onDiagramGenerated={handleDiagramGenerated}
-                  className="w-full"
-                />
-              </div>
             </div>
           </div>
 
