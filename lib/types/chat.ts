@@ -23,3 +23,17 @@ export interface ChatAction {
     | "UPDATE_MESSAGE";
   payload?: any;
 }
+export type DiagramType =
+  | "flowchart"
+  | "sequence_diagram"
+  | "class_diagram"
+  | "er_diagram"
+  | "state_diagram"
+  | "gantt_chart"
+  | "not_diagram";
+
+export interface IdentificationResult {
+  type: DiagramType;
+  message: string;
+  confidence?: "high" | "medium" | "low";
+}

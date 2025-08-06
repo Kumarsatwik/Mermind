@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useReducer } from "react";
+import React, { useRef, useEffect, useReducer } from "react";
 import { cn } from "@/lib/utils";
 import {
   ChatMessage as ChatMessageType,
@@ -160,9 +160,10 @@ const Chat: React.FC<ChatProps> = ({ onDiagramGenerated, className }) => {
         payload: {
           id: assistantMessageId,
           updates: {
-            content: `I apologize, but I encountered an error while generating your diagram: ${
-              error instanceof Error ? error.message : "Unknown error"
-            }. Please try rephrasing your request or check if your description is clear.`,
+            content:
+              error instanceof Error
+                ? error.message
+                : "Unknown error. Please try rephrasing your request or check if your description is clear.",
             isGenerating: false,
             type: "text",
           },
@@ -241,9 +242,9 @@ const Chat: React.FC<ChatProps> = ({ onDiagramGenerated, className }) => {
                 <p>
                   <strong>Examples:</strong>
                 </p>
-                <p>"Create a flowchart for user authentication"</p>
-                <p>"Generate a sequence diagram for API calls"</p>
-                <p>"Make a class diagram for an e-commerce system"</p>
+                <p>&quot;Create a flowchart for user authentication&quot;</p>
+                <p>&quot;Generate a sequence diagram for API calls&quot;</p>
+                <p>&quot;Make a class diagram for an e-commerce system&quot;</p>
               </div>
             </div>
           </div>

@@ -1,5 +1,6 @@
 "use server";
 
+import { DiagramType, IdentificationResult } from "@/lib/types/chat";
 import Groq from "groq-sdk";
 import OpenAI from "openai";
 
@@ -84,7 +85,7 @@ export async function deepseek_api(prompt: string) {
 
 export async function IdentifyTypes(
   prompt: string,
-  validDiagramTypes: string[] = [
+  validDiagramTypes: DiagramType[] = [
     "flowchart",
     "sequence_diagram",
     "class_diagram",
@@ -92,44 +93,109 @@ export async function IdentifyTypes(
     "state_diagram",
     "gantt_chart",
   ]
-): Promise<string> {
-  // Identify prompt type
-  if (!prompt || prompt.trim() === "") {
-    throw new Error("Prompt cannot be empty");
+): Promise<IdentificationResult> {
+  // Input validation
+  if (!prompt || typeof prompt !== "string" || prompt.trim() === "") {
+    throw new Error("Prompt must be a non-empty string");
   }
 
-  const identify_prompt = `You are a prompt identifier specialized in Mermaid diagram types. Your job is to identify which type of diagram the user wants to generate from the given prompt.
+  const cleanedPrompt = prompt.trim();
 
-Valid diagram types: ${validDiagramTypes.join(", ")}
+  // Construct a more effective system prompt with clear JSON structure
+  const systemPrompt = `You are an expert AI assistant specialized in identifying Mermaid.js diagram types from natural language prompts.
 
-Instructions:
-- Analyze the user's prompt carefully
-- Return ONLY one of the valid diagram types listed above
-- If the prompt is not related to diagram generation, return "not_diagram"
-- Be specific and accurate in your classification
+Task:
+Analyze the user's input and determine if it describes a diagram that can be represented using Mermaid.
 
-User prompt: "${prompt}"
+Valid Diagram Types:
+- ${validDiagramTypes.join("\n- ")}
 
-Return only the diagram type (e.g., "flowchart", "sequence_diagram", etc.) or "not_diagram":`;
+Rules:
+1. If the prompt clearly relates to one of the valid diagram types above, return:
+   { "type": "<diagram_type>", "message": "The prompt describes a <diagram_type>." }
+2. If the prompt is ambiguous but likely refers to a diagram, pick the most probable type based on keywords.
+3. If the prompt does not relate to diagram generation at all (e.g., general question, unrelated task), return:
+   { "type": "not_diagram", "message": "The provided prompt is not related to diagram generation." }
+4. Respond ONLY with a valid JSON object. No explanations, no extra text.
 
-  const chatCompletion = await groq_api(identify_prompt);
-  // Print the completion returned by the LLM.
-  const identifiedPrompt = chatCompletion.trim().toLowerCase();
+Output Format (strict JSON):
+{
+  "type": "flowchart" | "sequence_diagram" | "class_diagram" | "er_diagram" | "state_diagram" | "gantt_chart" | "not_diagram",
+  "message": string
+}
 
-  // Validate the response
-  if (
-    !validDiagramTypes.includes(identifiedPrompt) &&
-    identifiedPrompt !== "not_diagram"
-  ) {
-    return "not_diagram"
+Examples:
+Input: "Show how a user logs in with steps"
+Output: { "type": "flowchart", "message": "The prompt describes a flowchart." }
+
+Input: "Draw a timeline for project milestones"
+Output: { "type": "gantt_chart", "message": "The prompt describes a gantt_chart." }
+
+Input: "What is 2 + 2?"
+Output: { "type": "not_diagram", "message": "The provided prompt is not related to diagram generation." }
+
+User Prompt: "${cleanedPrompt}"
+`;
+
+  try {
+    const chatCompletion = await groq_api(systemPrompt);
+    let parsedResponse: IdentificationResult;
+
+    // Attempt to extract JSON from response (LLMs sometimes add extra text)
+    const jsonMatch = chatCompletion.trim().match(/\{[\s\S]*\}/); // Find first JSON-like object
+    const jsonString = jsonMatch ? jsonMatch[0] : chatCompletion.trim();
+
+    try {
+      parsedResponse = JSON.parse(jsonString) as IdentificationResult;
+    } catch (parseError) {
+      console.warn("Failed to parse LLM output as JSON:", jsonString);
+      return {
+        type: "not_diagram",
+        message:
+          "Could not interpret the prompt as a diagram request due to invalid response format.",
+      };
+    }
+
+    // Validate the structure and content
+    if (
+      typeof parsedResponse !== "object" ||
+      !parsedResponse.type ||
+      typeof parsedResponse.message !== "string"
+    ) {
+      return {
+        type: "not_diagram",
+        message:
+          "Invalid response structure from AI model during diagram type identification.",
+      };
+    }
+
+    // Normalize type to lowercase
+    const normalizedType = parsedResponse.type.toLowerCase() as DiagramType;
+
+    // Final validation against allowed types
+    if (
+      !validDiagramTypes.includes(normalizedType) &&
+      normalizedType !== "not_diagram"
+    ) {
+      return {
+        type: "not_diagram",
+        message: `Unrecognized diagram type: ${parsedResponse.type}`,
+      };
+    }
+
+    // Return consistent result
+    return {
+      type: normalizedType,
+      message: parsedResponse.message,
+    };
+  } catch (error) {
+    console.error("Error in IdentifyTypes:", error);
+    throw new Error(
+      `Failed to identify diagram type: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
   }
-
-  if (identifiedPrompt === "not_diagram") {
-    return "not_diagram";
-  }
-  console.log("Identified Prompt:", identifiedPrompt);
-
-  return identifiedPrompt;
 }
 
 export async function ImprovePrompt(
@@ -258,40 +324,61 @@ Generate the Mermaid diagram code:`;
 export const generateMermaidDiagram = async (
   prompt: string
 ): Promise<string> => {
-  // Validate the prompt
-  if (!prompt || prompt.trim() === "") {
-    throw new Error("Prompt cannot be empty");
+  // Validate input
+  if (!prompt || typeof prompt !== "string" || prompt.trim() === "") {
+    throw new Error("Prompt cannot be empty or invalid");
   }
 
-  const validDiagramTypes = [
-    "flowchart",
-    "sequence_diagram",
-    "class_diagram",
-    "er_diagram",
-    "state_diagram",
-    "gantt_chart",
-  ];
-  const diagramType = await IdentifyTypes(prompt, validDiagramTypes);
+  const trimmedPrompt = prompt.trim();
 
-  console.log("Diagram Type Identified:", diagramType);
+  try {
+    // Step 1: Identify the diagram type
+    const identificationResult = await IdentifyTypes(trimmedPrompt);
 
-  if (diagramType === "not_diagram") {
-    throw new Error(
-      "The provided prompt is not related to diagram generation."
-    );
+    console.log("Diagram Type Identification Result:", identificationResult);
+
+    // Extract type from result
+    const diagramType = identificationResult.type;
+
+    // Check if it's a valid diagram request
+    if (diagramType === "not_diagram") {
+      throw new Error(
+        identificationResult.message ||
+          "The prompt is not related to diagram generation."
+      );
+    }
+
+    // Step 2: Improve the prompt for better clarity and structure
+    const improvedPrompt = await ImprovePrompt(trimmedPrompt, diagramType);
+
+    if (!improvedPrompt || improvedPrompt.trim() === "") {
+      throw new Error("Failed to improve prompt: received empty result");
+    }
+
+    console.log("Improved Prompt:", improvedPrompt);
+
+    // Step 3: Generate the actual Mermaid diagram code
+    const diagramCode = await GenerateDiagram(improvedPrompt, diagramType);
+
+    if (!diagramCode || diagramCode.trim() === "") {
+      throw new Error("Generated diagram code is empty");
+    }
+
+    console.log("Generated Mermaid Diagram Code:", diagramCode);
+
+    // Optional: Wrap in ```mermaid if needed, depending on consumer
+    // return \`\`\`mermaid\n${diagramCode}\n\`\`\`;
+
+    return diagramCode;
+  } catch (error) {
+    // Re-throw with context, but keep original error if available
+    if (error instanceof Error) {
+      console.error("Error in generateMermaidDiagram:", error.message);
+      throw error;
+    } else {
+      const errorMsg = "Unknown error occurred during diagram generation";
+      console.error("Error in generateMermaidDiagram:", error);
+      throw new Error(errorMsg);
+    }
   }
-
-  // improve the prompt for better diagram generation
-  const improvedPrompt = await ImprovePrompt(prompt, diagramType);
-
-  // generate the diagram based on the identified type
-  console.log("Improved Prompt:", improvedPrompt);
-  if (!improvedPrompt || improvedPrompt.trim() === "") {
-    throw new Error("Improved prompt cannot be empty");
-  }
-
-  const result = await GenerateDiagram(improvedPrompt, diagramType);
-  console.log("Generated Diagram:", result);
-
-  return result;
 };
