@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import mermaid from "mermaid";
 import {
   Loader2,
-  X,
   ZoomIn,
   ZoomOut,
   RotateCcw,

@@ -35,7 +35,7 @@ export default function VerifyEmail() {
         setMessage("Verification email sent successfully! Please check your inbox.");
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
       setLoading(false);
     }

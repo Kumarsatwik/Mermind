@@ -269,7 +269,7 @@ Generate the Mermaid diagram code:`;
         message: parsed.message,
         confidence: parsed.confidence,
       };
-    } catch (error) {
+    } catch {
       console.warn("Failed to parse identification response:", response);
       return {
         type: "not_diagram",

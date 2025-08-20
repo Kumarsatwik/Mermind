@@ -95,7 +95,7 @@ User Prompt: "${cleanedPrompt}"`;
         confidence: parsed.confidence,
       };
     } catch (parseError) {
-      console.warn("Failed to parse identification response:", response);
+      console.warn("Failed to parse identification response:", parseError);
       return {
         type: "not_diagram",
         message:

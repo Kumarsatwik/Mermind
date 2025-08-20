@@ -1,7 +1,6 @@
 import Groq from "groq-sdk";
 import OpenAI from "openai";
 import { API_CONFIG } from "@/lib/constants";
-import type { GroqConfig, DeepSeekConfig } from "@/types";
 
 export class AIClientError extends Error {
   constructor(

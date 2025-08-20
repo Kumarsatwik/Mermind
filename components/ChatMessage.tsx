@@ -25,7 +25,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       toast.success("Copied to clipboard");
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      toast.error("Failed to copy");
+      toast.error(error instanceof Error ? error.message : "Failed to copy");
     }
   };
 

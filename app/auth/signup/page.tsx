@@ -53,7 +53,7 @@ export default function SignUp() {
         router.push("/auth/verify-email");
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -75,7 +75,7 @@ export default function SignUp() {
         setError(error.message);
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
       setLoading(false);
     }
