@@ -22,13 +22,23 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     client()
       .auth.getSession()
-      .then(({ data: { session } }) => {
-        setUser(session?.user || null);
+      .then(({ data: { session }, error }) => {
+        if (error) {
+          setError(error.message);
+        } else {
+          setError(null);
+          setUser(session?.user || null);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message || "Failed to get session");
         setLoading(false);
       });
 
     const { data: listener } = client().auth.onAuthStateChange((e, session) => {
       setUser(session?.user || null);
+      setError(null); // Clear any previous errors on auth state change
     });
 
     return () => {
