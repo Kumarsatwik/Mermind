@@ -1,0 +1,291 @@
+# Mermind - Mermaid Diagram Generator
+
+You are an AI assistant helping to build "Mermind", a Next.js application that generates Mermaid diagrams from natural language descriptions using AI.
+
+## Project Overview
+
+This is a full-stack Next.js 15 application with:
+
+- **Frontend**: React 19, TypeScript, Tailwind CSS, shadcn/ui
+- **Backend**: Next.js App Router, Server Actions, API Routes
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: Supabase Auth with NextAuth integration
+- **AI Integration**: Groq API (prompt processing) + DeepSeek API (diagram generation)
+- **Deployment**: Optimized for Vercel
+
+## Tech Stack & Dependencies
+
+### Core Framework
+
+- Next.js 15.4.5 with App Router
+- React 19.1.0 with Server Components
+- TypeScript 5+ with strict mode
+- Tailwind CSS v4 with CSS variables
+
+### UI Components
+
+- shadcn/ui (New York style) with Radix UI primitives
+- Lucide React icons
+- Sonner for notifications
+- next-themes for dark/light mode
+
+### Database & Auth
+
+- Supabase for authentication and database
+- Prisma 6+ as ORM with PostgreSQL
+- NextAuth v4 for session management
+- @auth/prisma-adapter for integration
+
+### AI & APIs
+
+- Groq SDK for prompt identification/improvement
+- OpenAI SDK for DeepSeek API integration
+- Server Actions for secure API calls
+
+## Code Style & Conventions
+
+### TypeScript
+
+- Use strict TypeScript settings
+- Prefer explicit types over `any`
+- Use proper interface definitions for props
+- Leverage type inference where appropriate
+- Use `const` assertions for immutable data
+
+### File Naming
+
+- Use kebab-case for file names: `user-profile.tsx`
+- Use PascalCase for React components: `UserProfile.tsx`
+- Use camelCase for utility functions: `formatDate.ts`
+- Use SCREAMING_SNAKE_CASE for constants: `MAX_FILE_SIZE`
+
+### Component Structure
+
+```tsx
+// 1. External imports
+import React from "react";
+import { NextPage } from "next";
+
+// 2. Internal imports (absolute paths with @/)
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+
+// 3. Types/interfaces
+interface ComponentProps {
+  title: string;
+  isVisible?: boolean;
+}
+
+// 4. Component definition
+export const Component: React.FC<ComponentProps> = ({
+  title,
+  isVisible = true,
+}) => {
+  // Component logic
+  return <div className="space-y-4">{/* Component JSX */}</div>;
+};
+```
+
+### CSS & Styling
+
+- Use Tailwind CSS utility classes
+- Follow mobile-first responsive design
+- Use CSS variables for theming (already configured)
+- Prefer composition over custom CSS
+- Use `cn()` utility for conditional classes
+
+### Import Order & Aliases
+
+- Use absolute imports with `@/` prefix
+- Group imports: external → internal → types
+- Aliases configured:
+  - `@/components` for components
+  - `@/lib` for utilities
+  - `@/hooks` for custom hooks
+  - `@/utils` for utility functions
+
+## Architecture Patterns
+
+### App Router Structure
+
+```
+app/
+├── (auth)/           # Route groups for auth pages
+├── dashboard/        # Protected dashboard pages
+├── api/             # API routes
+├── globals.css      # Global styles
+├── layout.tsx       # Root layout with providers
+└── page.tsx         # Home page
+```
+
+### Component Organization
+
+```
+components/
+├── ui/              # shadcn/ui components
+├── context/         # React context providers
+├── [feature]/       # Feature-specific components
+└── shared/          # Reusable components
+```
+
+### Server Components & Actions
+
+- Prefer Server Components for data fetching
+- Use Server Actions for mutations
+- Keep client-side interactivity minimal
+- Use `"use client"` directive only when necessary
+
+### Database Patterns
+
+- Use Prisma for all database operations
+- Follow repository pattern for complex queries
+- Use transactions for multi-table operations
+- Implement proper error handling
+
+### Authentication Flow
+
+- Supabase handles auth state
+- NextAuth manages sessions
+- Protect routes with middleware
+- Use AuthProvider context for client state
+
+## AI Integration Guidelines
+
+### Server Actions for AI
+
+- All AI API calls must use Server Actions
+- Never expose API keys to client-side
+- Implement proper error handling and retries
+- Use streaming for long-running operations
+
+### Prompt Engineering
+
+- Groq API: Prompt identification and improvement
+- DeepSeek API: Mermaid diagram generation
+- Validate AI responses before rendering
+- Provide fallbacks for API failures
+
+## Development Guidelines
+
+### Error Handling
+
+- Use try-catch blocks for async operations
+- Implement proper error boundaries
+- Show user-friendly error messages
+- Log errors for debugging
+
+### Performance
+
+- Use React.memo() for expensive components
+- Implement proper loading states
+- Optimize images with next/image
+- Use dynamic imports for code splitting
+
+### Security
+
+- Validate all user inputs
+- Sanitize data before database operations
+- Use HTTPS for all API calls
+- Implement rate limiting for AI endpoints
+
+### Testing & Quality
+
+- Write type-safe code
+- Use ESLint configuration provided
+- Test critical user flows
+- Implement proper loading and error states
+
+## UI/UX Guidelines
+
+### Design System
+
+- Follow shadcn/ui New York style guidelines
+- Use consistent spacing (space-y-4, gap-4, etc.)
+- Implement proper focus management
+- Support keyboard navigation
+
+### Responsive Design
+
+- Mobile-first approach
+- Use Tailwind responsive prefixes (sm:, md:, lg:)
+- Test on multiple screen sizes
+- Ensure touch-friendly interfaces
+
+### Accessibility
+
+- Use semantic HTML elements
+- Provide proper ARIA labels
+- Maintain good color contrast
+- Support screen readers
+
+## Specific Features
+
+### Mermaid Integration
+
+- Use mermaid library for diagram rendering
+- Validate Mermaid syntax before rendering
+- Provide diagram export functionality
+- Support multiple diagram types
+
+### Editor Experience
+
+- Real-time preview of diagrams
+- Syntax highlighting for Mermaid code
+- Auto-save functionality
+- Export options (PNG, SVG, PDF)
+
+### Dashboard Features
+
+- User diagram history
+- Save/load functionality
+- Sharing capabilities
+- Template library
+
+## Environment & Deployment
+
+### Environment Variables
+
+```bash
+# Database
+DATABASE_URL=
+
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+
+# AI APIs (Server-side only)
+GROQ_API_KEY=
+DEEPSEEK_API_KEY=
+
+# NextAuth
+NEXTAUTH_SECRET=
+NEXTAUTH_URL=
+```
+
+### Build & Deployment
+
+- Optimize for Vercel deployment
+- Use proper caching strategies
+- Implement proper environment handling
+- Monitor build performance
+
+## Best Practices Summary
+
+1. **Type Safety**: Always use TypeScript properly
+2. **Performance**: Leverage Next.js optimizations
+3. **Security**: Never expose sensitive data client-side
+4. **UX**: Provide loading states and error handling
+5. **Accessibility**: Follow WCAG guidelines
+6. **Code Quality**: Use provided linting and formatting
+7. **Architecture**: Keep components focused and reusable
+8. **Testing**: Write reliable, maintainable code
+
+When making changes, consider the impact on:
+
+- User experience and accessibility
+- Performance and loading times
+- Type safety and code maintainability
+- Security and data protection
+- Mobile responsiveness
+- AI integration reliability

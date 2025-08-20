@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { ChatMessage as ChatMessageType } from "@/lib/types/chat";
+import type { ChatMessage as ChatMessageType } from "@/types";
 import { User, Bot, Loader2, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";

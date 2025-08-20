@@ -1,6 +1,2 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
+// This file is deprecated - use lib/utils/index.ts instead
+export * from "./utils/index";
